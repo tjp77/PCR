@@ -46,6 +46,11 @@ Each primer have an end point var to track how far extended?
 
 "There are many copies of the primers and many molecules of Taq polymerase floating around in the reaction, so the number of DNA molecules can roughly double in each round of cycling."
 
+"Optimally, the formula used to calculate the number of DNA copies formed after a given number of cycles is 2n, where n is the number of cycles. Thus, a reaction set for 30 cycles results in 230, or 1073741824, copies of the original double-stranded DNA target region." 
+
+
+Video with good animation of copying process and copy strand lengths. 
+https://www.youtube.com/watch?v=JmveVAYKylk
 
 """
 
@@ -78,20 +83,19 @@ def getDNA():
     return dna;
    
 
-# Step 1 function.
+# Step 1 function. Splitng of DNA strands. 
 
 # In the first step of PCR, the two strands of the DNA double helix are physically separated at a high temperature in a process called DNA melting. 
 
 
-def Step1():
+def Step1(): 
     
-    return 1; # Placeholder. 
+    return 1; # 
 
 
-# Step 2 function. 
+# Step 2 function. Primers bind to DNA.
 
 # In the second step, the temperature is lowered and the primers bind to the complementary sequences of DNA.
-# In the next step, the reaction temperature is lowered allowing annealing of the primers to each of the single-stranded DNA templates.
 # The primers are single-stranded sequences themselves, but are much shorter than the length of the target region, 
 # complementing only very short sequences at the 3' end of each strand.
 
@@ -101,7 +105,7 @@ def Step2():
     return 1;
 
 
-# Step 3 function.
+# Step 3 function. Build copy off of primer, based on DNA.
 
 # The two DNA strands then become templates for DNA polymerase to enzymatically assemble a new DNA strand from free nucleotides, the 
 # building blocks of DNA. As PCR progresses, the DNA generated is itself used as a template for replication, setting in motion a 
@@ -154,6 +158,8 @@ def main():
     ResultPrint();
     
     return 0; 
+
+
 
 
 
