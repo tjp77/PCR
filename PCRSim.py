@@ -74,12 +74,15 @@ https://cdn.kastatic.org/ka-perseus-images/41f0e0fd8b49ba824db0eb707015557bb72ae
 d = 200;
 e = 50;
 
-# Assuming fall-off rate is falls off after copying that many bases, since max fo rate is 250, min 150, and supossed to only run 1-50 cycles. 
+# Assuming fall-off rate means that primer falls off after copying that many bases (A, T, G, C). [Confirmed] 
 
 
 
 def getDNA():
-    # Get/ Generate DNA to use here. 
+    # Get/ Generate DNA to use here. Replace test/placeholder var value. 
+    
+    dna = "AGGCTTAAAGCCTGATGCACACCGATGACTAGGCTCTCATCGAGTAGCGATCGGCCTTAAATATCCGTGATCGATGACGTACGTACTGACTGACTGTACTTAATCGTACTTCGAGCTAGTCGATGCATCGAGTTAGGCCCCTAGTCGATCTGATCGGTACGT";
+    
     return dna;
    
 
@@ -133,14 +136,21 @@ def ResultPrint():
 
 
 
+# ----- Turn off the primer decay/fall off at first to check if getting the right amount of copied by the end for testing purposes. 
+
 def main():
     
     # Get dna input sequence.
     dnaSeg = getDNA();
     
+    # Get input of what each primer should be so can choose region to copy. 
+    
+    testPrimerFrw = "AGGCTTAAAGCCTGATGCAC";
+    testPrimerBkw = "CTAGTCGATCTGATCGGTAC";
+    
     # Get cycle count input From user.
     
-    cycleCount = 0;
+    cycleCount = 1;
     
     completeCycles = 0;
     
