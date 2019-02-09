@@ -1,51 +1,32 @@
 #!/user/bin/python
+import random;
 
 
 #---------- Misc. Notes ----------
 
 """
 two DNA primers that are complementary to the 3' (three prime) ends of each of the sense and anti-sense strands of the DNA target
-
 specific primers that are complementary to the DNA target region are selected beforehand, and are often custom-made in a laboratory
 
-
 "2. Your original DNA template is of n base-pairs (assume n = 2000 for your test case if you generate your template randomly).
-
 3. The size of the DNA segment to be amplified is m (assume m = 200 if the template is generated randomly). "
 
-
 https://teaching.ncl.ac.uk/bms/wiki/index.php/DNTP
-
 
 list.append() adds its argument as a single element to the end of a list. The length of the list itself will increase by one.
 list.extend() iterates over its argument adding each element to the list, extending the list. The length of the list will increase by however many elements were in the iterable argument.
 
-
-Can't have single fall off rate, dif primers would have dif rates, primer for each strand being copied, one to copy each of those copies, etc...
-
-backwards primer, use of from back indexing functionality?
-
-(!!!) Each primer extend for 200 base pairs on each end (stated length to copy) area between them is copied segment. 
-      So have to have primers end before part want copied, they act as a scafold to build on. 
-
 https://www.khanacademy.org/science/biology/biotech-dna-technology/dna-sequencing-pcr-electrophoresis/a/polymerase-chain-reaction-pcr
-
-
-
 
 ------More straight forward step description:------
 
 !) Denaturation (96°C): Heat the reaction strongly to separate, or denature, the DNA strands. This provides single-stranded template for the next step.
-
 2) Annealing (5555 - 6565°C): Cool the reaction so the primers can bind to their complementary sequences on the single-stranded template DNA.
-
 3) Extension (72°C): Raise the reaction temperatures so Taq polymerase extends the primers, synthesizing new strands of DNA.
-
-
-Each primer have an end point var to track how far extended? 
 
 "There are many copies of the primers and many molecules of Taq polymerase floating around in the reaction, so the number of DNA molecules can roughly double in each round of cycling."
 
+Turn off primer decay,and use the below to test # copies made:
 "Optimally, the formula used to calculate the number of DNA copies formed after a given number of cycles is 2n, where n is the number of cycles. Thus, a reaction set for 30 cycles results in 230, or 1073741824, copies of the original double-stranded DNA target region." 
 
 
@@ -56,42 +37,30 @@ https://www.youtube.com/watch?v=JmveVAYKylk
 
 #---------------------------------
 
-
-
-# The size of the DNA segment to be amplified. 
-
-ampSegLen = 200; 
+ampSegLen = 200; # Size of segment to copy. Will need later when put in real data, or generate dna other then test strands. Let user input this?
 primerLen = 20; # "Assume that the length of the original forward and backward primers are fixed at p bases (assume p = 20)."
-fragmentCount = 0;
-fallOffRate = 0 # Set: The taq polymerase “fall-off rate” is d+r, where d is a fixed constant, and r is a random number between [-e, e], (assume d = 200, e=50). 
+fragmentCount = 0; 
 
-# Forward and backward primer could have 'fall off' at different times... Set separately. 
-# For every copy made, make new 'active' primer, - 1 primer for a fall off. 
-https://cdn.kastatic.org/ka-perseus-images/41f0e0fd8b49ba824db0eb707015557bb72ae72b.png
-
-# !!!!![not just one primer, replace single fo variable with something more.] !!!!!
+# https://cdn.kastatic.org/ka-perseus-images/41f0e0fd8b49ba824db0eb707015557bb72ae72b.png
 
 d = 200;
 e = 50;
 
-# Assuming fall-off rate means that primer falls off after copying that many bases (A, T, G, C). [Confirmed] 
-
+# Fall-off rate means that primer falls off after copying that many bases (A, T, G, C). [Confirmed] 
 
 
 def getDNA():
-    # Get/ Generate DNA to use here. Replace test/placeholder var value. 
+    # Get/Generate DNA to use here. Replace test/placeholder var value. 
     
-    dna = "AGGCTTAAAGCCTGATGCACACCGATGACTAGGCTCTCATCGAGTAGCGATCGGCCTTAAATATCCGTGATCGATGACGTACGTACTGACTGACTGTACTTAATCGTACTTCGAGCTAGTCGATGCATCGAGTTAGGCCCCTAGTCGATCTGATCGGTACGT";
+    dna1 = "AGGCTTAAAGCCTGATGCACACCGATGACTAGGCTCTCATCGAGTAGCGATCGGCCTTAAATATCCGTGATCGATGACGTACGTACTGACTGACTGTACTTAATCGTACTTCGAGCTAGTCGATGCATCGAGTTAGGCCCCTAGTCGATCTGATCGGTACGT";
     
-    return dna;
-   
-
-# Step 1 function. Splitng of DNA strands. 
-
-# In the first step of PCR, the two strands of the DNA double helix are physically separated at a high temperature in a process called DNA melting. 
+    dna2 = "TCCGAATTTCGGACTACGTGTGGCTACTGATCCGAGAGTAGCTCATCGCTAGCCGGAATTTATAGGCACTAGCTACTGCATGCATGACTGACTGACATGAATTAGCATGAAGCTCGATCAGCTACGTAGCTCAATCCGGGGATCAGCTAGACTAGCCATGCA";
+    
+    return dna1;
 
 
 def Step1(): 
+    # In the first step, the two strands of the DNA are physically separated.
     
     return 1; # 
 
@@ -105,16 +74,28 @@ def Step1():
 
 def Step2():
     
+    # search strands for primer binding locations (regex), if find a matching spot then can attach. 
+    
     return 1;
 
 
 # Step 3 function. Build copy off of primer, based on DNA.
 
 # The two DNA strands then become templates for DNA polymerase to enzymatically assemble a new DNA strand from free nucleotides, the 
-# building blocks of DNA. As PCR progresses, the DNA generated is itself used as a template for replication, setting in motion a 
-# chain reaction in which the original DNA template is exponentially amplified.
+# building blocks of DNA.
 
 def Step3():
+    
+    # If length of area to copy is longer than strand section to be copied, will get a partial strand of shorter length. 
+    
+    # Generate random fall off rate with: random.randint(-e, e) + d
+    
+    # Use list copy thing [x:x] to copy the segment of the dna to be copied into one string.
+    # Convert to oppsite bases as done in class, to make the primer extention. 
+    
+    
+    # +1 strand made for each copy.
+    # Record length of each new strand made so can display average base length of strands in output. 
     
     return 1;
 
@@ -128,12 +109,11 @@ def ResultPrint():
     
     print ("Fragment Count: ", fragmentCount, "\n");
     #       (b)   !!! Average length (# bases) of DNA fragments. !!! - Track, Add fragments to list. List of fragment strings/lists? || tup? 
-    #       (c)   Distribution of the lengths of the DNA fragments (you may use column chart to show your result). (? Find out more.)
+    #       (c)   Distribution of the lengths of the DNA fragments (you may use column chart to show your result). 
     
     # 2. Other things you find interesting.
     
     return 0;
-
 
 
 # ----- Turn off the primer decay/fall off at first to check if getting the right amount of copied by the end for testing purposes. 
@@ -142,14 +122,14 @@ def main():
     
     # Get dna input sequence.
     dnaSeg = getDNA();
-    
+
     # Get input of what each primer should be so can choose region to copy. 
+    # Validate input that both entered primers are the same length, update common primer length var defined above. 
     
-    testPrimerFrw = "AGGCTTAAAGCCTGATGCAC";
-    testPrimerBkw = "CTAGTCGATCTGATCGGTAC";
+    primerFrw = "AGGCTTAAAGCCTGATGCAC";
+    primerBkw = "TCAGCTAGACTAGCCATGCA";
     
-    # Get cycle count input From user.
-    
+    # Get cycle count input From user. Default/base testing = 1;
     cycleCount = 1;
     
     completeCycles = 0;
@@ -171,7 +151,5 @@ def main():
 
 
 
-
-
-
+main();
 
