@@ -90,6 +90,7 @@ def Step3():
     
     # Use list copy thing [:] => [extention start point:extention start point + (max(target segement len, bases before fall off)] 
     # to copy the segment of the dna to be copied into one string. Prime begining/end of the this string of course depending on if fwd or bkw primer.
+    # Remember [:] thing going backwards for backwards primer. 
     # Convert to oppsite bases as done in class, to make the primer extention. 
     
     
@@ -120,8 +121,10 @@ def ResultPrint():
 
 def main():
     
+    dnaContainer; # List to hold either strand pairs or individual strands depending how output needs and how we choose to represent. 
+    
     # Get dna input sequence.
-    dnaSeg = getDNA();
+    getDNA();
 
     # Get input of what each primer should be so can choose region to copy. 
     # Validate input that both entered primers are the same length, update common primer length var defined above. 
@@ -155,3 +158,4 @@ def main():
 
 
 main();
+
