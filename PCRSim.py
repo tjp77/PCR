@@ -144,13 +144,19 @@ def main():
     while completeCycles < cycleCount:
         
         Step1();
-        Step2(primerFrw, primerBkw); # Maybe easier to combine steps 2^3 ^ just attach primer and build in one step from code perspective, one string.
+        Step2(primerFrw, primerBkw); # Maybe easier to combine steps 2^3 ^ just attach primer ^ build in one step from code perspective, one string.
         Step3();
         completeCycles += 1;
         
         # Print out results of each cycle, at least for checking program correctness and debugging purposes if nothing else? 
     
     ResultPrint();
+    
+    
+    # You will get bonus points if it you can add more parameters and some limitations (such as amount of primers, dNTPs, age of 
+    # taqs, temperature, mutations, …)
+    
+    # Adding a chance for mutations which can be turned on and off seems like a good/simple one to do. 
     
     return 0; 
 
