@@ -1,5 +1,6 @@
 #!/user/bin/python
 import random;
+import re;
 
 
 #---------- Misc. Notes ----------
@@ -29,9 +30,10 @@ https://www.khanacademy.org/science/biology/biotech-dna-technology/dna-sequencin
 Turn off primer decay,and use the below to test # copies made:
 "Optimally, the formula used to calculate the number of DNA copies formed after a given number of cycles is 2n, where n is the number of cycles. Thus, a reaction set for 30 cycles results in 230, or 1073741824, copies of the original double-stranded DNA target region." 
 
-
 Video with good animation of copying process and copy strand lengths. 
 https://www.youtube.com/watch?v=JmveVAYKylk
+
+https://cdn.kastatic.org/ka-perseus-images/41f0e0fd8b49ba824db0eb707015557bb72ae72b.png
 
 """
 
@@ -40,13 +42,8 @@ https://www.youtube.com/watch?v=JmveVAYKylk
 ampSegLen = 200; # Size of segment to copy. Will need later when put in real data, or generate dna other then test strands. Let user input this?
 primerLen = 20; # "Assume that the length of the original forward and backward primers are fixed at p bases (assume p = 20)."
 fragmentCount = 0; 
-
-# https://cdn.kastatic.org/ka-perseus-images/41f0e0fd8b49ba824db0eb707015557bb72ae72b.png
-
-d = 200;
-e = 50;
-
-# Fall-off rate means that primer falls off after copying that many bases (A, T, G, C). [Confirmed] 
+d = 200; e = 50; 
+primerDecayOn = True;
 
 
 def getDNA():
@@ -72,7 +69,7 @@ def Step1():
 # complementing only very short sequences at the 3' end of each strand.
 
 
-def Step2():
+def Step2(primerFrw, primerBkw):
     
     # search strands for primer binding locations (regex), if find a matching spot then can attach. 
     
@@ -88,9 +85,11 @@ def Step3():
     
     # If length of area to copy is longer than strand section to be copied, will get a partial strand of shorter length. 
     
-    # Generate random fall off rate with: random.randint(-e, e) + d
+    # Generate random fall off rate with: random.randint(-e, e) + d for primer of current strand being copied. 
+    # Fall-off rate means that primer falls off after copying that many bases (A, T, G, C). [Confirmed]
     
-    # Use list copy thing [x:x] to copy the segment of the dna to be copied into one string.
+    # Use list copy thing [:] => [extention start point:extention start point + (max(target segement len, bases before fall off)] 
+    # to copy the segment of the dna to be copied into one string. Prime begining/end of the this string of course depending on if fwd or bkw primer.
     # Convert to oppsite bases as done in class, to make the primer extention. 
     
     
@@ -117,6 +116,7 @@ def ResultPrint():
 
 
 # ----- Turn off the primer decay/fall off at first to check if getting the right amount of copied by the end for testing purposes. 
+# ----- Adding bool to use to turn of and on. Default set to True.
 
 def main():
     
@@ -130,16 +130,18 @@ def main():
     primerBkw = "TCAGCTAGACTAGCCATGCA";
     
     # Get cycle count input From user. Default/base testing = 1;
-    cycleCount = 1;
+    cycleCount = 1; 
     
     completeCycles = 0;
     
-    # For any step where, for our purposes, changing the step time length would make a difference, allow time input.
+    # Ask user if want to turn on primer decay. 
+    
+    # If for any step where, for our purposes, changing the step time length would make a difference, allow time input.
     
     while completeCycles < cycleCount:
         
         Step1();
-        Step2();
+        Step2(primerFrw, primerBkw); # Maybe easier to combine steps 2^3 ^ just attach primer and build in one step from code perspective, one string.
         Step3();
         completeCycles += 1;
         
@@ -151,5 +153,5 @@ def main():
 
 
 
-main();
 
+main();
