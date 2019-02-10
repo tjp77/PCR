@@ -96,6 +96,11 @@ def Step2(dnaContainer, primerFrw, primerBkw):
         # elif regex find bkw primer, build new strand made up of bkw primer + complimetary dna strand of area to be copied behind bkw primer.
         
         # else incomeplete strand, likely due to previous early primer decay, strand does not get copied.  
+        
+        
+                
+        # !!! Put new strands in new container at first. Not sure if python lets the iterated container be added to, 
+        # and don't want them copied till next cycle even if so!
     
     return 1;
 
