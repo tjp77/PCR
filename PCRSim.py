@@ -76,8 +76,7 @@ class DNA:
             
 
 
-def generateDNA():  
-    # Finish. Change to actually generate a long enough first strand. Test with this first, or comment out new code till tested. 
+def generateDNA():  # Finish. Change to actually generate a long enough first strand. Test with this first, or comment out new code till tested. 
     
     strand1 = "AGGCTTAAAGCCTGATGCACACCGATGACTAGGCTCTCATCGAGTAGCGATCGGCCTTAAATATCCGTGATCGATGACGTACGTACTGACTGACTGTACTTAATCGTACTTCGAGCTAGTCGATGCATCGAGTTAGGCCCCTAGTCGATCTGATCGGTACGT";
     
@@ -112,6 +111,7 @@ def Step1(dnaContainer):
 def Step2(dnaContainer, primerFrw, primerBkw):
     
 
+    
     return 0;
 
 
@@ -123,7 +123,7 @@ def Step2(dnaContainer, primerFrw, primerBkw):
 def Step3():
     
     # If length of area to copy is longer than strand section to be copied, will get a partial strand of shorter length. 
-    for section in dnaContainer:
+	    for section in dnaContainer:
         
         if (primerDecayOn):
             
@@ -137,9 +137,9 @@ def Step3():
         else:
             
             copyLen = mpSegLen;
-         
 
-	# build up area to be copied. 
+		
+	# Build up part to be copied into the primer 'strand2'.
         
         # !!! Put new strands in new container at first. Not sure if python lets the iterated container be added to, 
         # and don't want them copied till next cycle even if so!
@@ -197,21 +197,21 @@ def main():
     cycleCount = int(input("How many cycles should be ran?\n")); 
     completeCycles = 0;
     
-    # Ask user if want to turn on primer decay.
+    # Ask user if want to turn on primer decay. 
     
     while completeCycles < cycleCount:
         
-        Step1(); 
+        Step1(dnaContainer); 
         Step2(dnaContainer, primerFrw, primerBkw);
-        Step3();
+        Step3(dnaContainer);
         completeCycles += 1;
         
         # Print out results of each cycle, at least for checking program correctness and debugging purposes if nothing else? 
     
     ResultPrint(dnaContainer);
     
-    # "You will get bonus points if it you can add more parameters and some limitations (such as amount of primers, dNTPs, age of 
-    # taqs, temperature, mutations, …)"
+    # You will get bonus points if it you can add more parameters and some limitations (such as amount of primers, dNTPs, age of 
+    # taqs, temperature, mutations, …)
     
     # Adding a chance for mutations which can be turned on and off seems like a good/simple one to do. 
     
