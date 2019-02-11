@@ -107,44 +107,11 @@ def Step1():
 
 def Step2(dnaContainer, primerFrw, primerBkw):
     
-    # search strands for primer binding locations (regex), if find a matching spot then can attach. 
-	
-	#most of code for htis function written with being able to compile, will check when I get home, but at least serves as a base to go off of.
-	# (and still needing to decide to to represent strands, singly or doubly.)
-    
+    # search strands for primer binding locations (regex), if find a matching spot then can attach.
+     
     for strand in dnaContainer:
+        x=0;
         
-        if (primerDecayOn):
-            
-            # Generate decay/falloff rate for whatever primer will bind to the strand, if one does. 
-            decay = random.randint(-e, e) + d;
-        
-            # If max bases primer can extend to/copy is less then the length
-            # of area want copied, will only get partial copy.
-            copyLen = min(decay, ampSegLen);
-            
-        else:
-            
-            copyLen = mpSegLen;
-        
-        # How to use variables in regex patterns: https://stackoverflow.com/questions/6930982/how-to-use-a-variable-inside-a-regular-expression
-        
-		frwSearch = strand.find(primerFrw);
-		bwkSearch = strand.find(primerBkw);
-		
-        if frwSearch is not -1:
-            # build new strand made up of fwd primer + complimetary dna strand of area to be copied in front of frw primer.
-			copy = primerFrw + buildComplimentaryStrand(strand[frwSearch + primerLen : copyLen]);
-        
-        elif bkwSearch is not -1:
-            # build new strand made up of bkw primer + complimetary dna strand of area to be copied behind bkw primer.
-			copy = primerBkw + buildComplimentaryStrand(strand[bkwSearch \: copyLen]);
-        else 
-            # incomeplete strand, likely due to previous early primer decay, strand does not get copied. 
-        
-        
-        # !!! Put new strands in new container at first. Not sure if python lets the iterated container be added to, 
-        # and don't want them copied till next cycle even if so!
     
     return 1;
 
@@ -161,6 +128,27 @@ def Step3():
     # Generate random fall off rate with: random.randint(-e, e) + d for primer of current strand being copied. 
     # Fall-off rate means that primer falls off after copying that many bases (A, T, G, C). [Confirmed]
     
+    # If length of area to copy is longer than strand section to be copied, will get a partial strand of shorter length. 
+    for section in dnaContainer:
+        
+        if (primerDecayOn):
+            
+        else:
+            
+            copyLen = mpSegLen;
+         
+        		
+        if section.frwPrimerIndex is not -1:
+	    #
+        elif section.bkwPrimerIndex is not -1:
+            #	
+        else 
+            # incomeplete strand, likely due to previous early primer decay, strand does not get copied.
+        
+    
+        
+        # !!! Put new strands in new container at first. Not sure if python lets the iterated container be added to, 
+        # and don't want them copied till next cycle even if so!
 
     return 1;
 
@@ -219,8 +207,8 @@ def main():
     
     while completeCycles < cycleCount:
         
-        Step1(); # Don't have physical strands to separate, unless decide to still represent them as pairs, may not need distinct step 1. 
-        Step2(dnaContainer, primerFrw, primerBkw); # Maybe easier to combine steps 2^3 ^ just attach primer ^ build in one step from code perspective, one string.
+        Step1(); 
+        Step2(dnaContainer, primerFrw, primerBkw);
         Step3();
         completeCycles += 1;
         
