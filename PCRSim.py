@@ -58,12 +58,10 @@ def buildComplimentaryStrand(strand):
     
      
 class DNA: 
-
-    # waiting on response about somehting to see if need to keep complimentary strands matched, or if will be fine to 
-    # have indivdual unmatched strands represented, which I think would be a bit easier due to how python handles strings. 
-    # [Confirmed, fragmentCount = indivdual single sided stands. No reason to represent as pairs, unless want more accurate/expandable representaton.]
     
-    strand2Set = False;
+    strand2 = "";
+	frwPrimerIndex = -1;
+	bkwPrimerIndex = -1;
     
     def __init__(self, strand1, generateStrand2):
         
@@ -71,15 +69,15 @@ class DNA:
         
         if (generateStrand2 == True):
             self.strand2 = buildComplimentaryStrand(strand1);
-            self.strand2Set = True;
         
         def setStrand2(self, strand):
-            self.strand2 = strand;
-            self.strand2Set = True;
+            self.strand2 += strand;
+
             
 
 
-def generateDNA():  # Finish. Change to actually generate a long enough first strand. Test with this first, or comment out new code till tested. 
+def generateDNA():  
+    # Finish. Change to actually generate a long enough first strand. Test with this first, or comment out new code till tested. 
     
     strand1 = "AGGCTTAAAGCCTGATGCACACCGATGACTAGGCTCTCATCGAGTAGCGATCGGCCTTAAATATCCGTGATCGATGACGTACGTACTGACTGACTGTACTTAATCGTACTTCGAGCTAGTCGATGCATCGAGTTAGGCCCCTAGTCGATCTGATCGGTACGT";
     
@@ -96,24 +94,25 @@ def readInDna(fileName, isDoubleStrand, generateStrand2): # Finish.
     return dna;
 
 
-def Step1(): 
+def Step1(dnaContainer): 
 
     # In the first step, the two strands of the DNA are physically separated.
+	
+	for section in dnaContainer:
+		if section.strand2 is not "":
+			dnaContainer.append(section.strand2);
+			section.strand2 = "";
+			
     
-    return 1; 
+    return 0; 
     
     
 # Step 2 function. Primers bind to DNA.
 
 def Step2(dnaContainer, primerFrw, primerBkw):
     
-    # search strands for primer binding locations (regex), if find a matching spot then can attach.
-     
-    for strand in dnaContainer:
-        x=0;
-        
-    
-    return 1;
+
+    return 0;
 
 
 # Step 3 function. Build copy off of primer, based on DNA.
@@ -124,33 +123,30 @@ def Step2(dnaContainer, primerFrw, primerBkw):
 def Step3():
     
     # If length of area to copy is longer than strand section to be copied, will get a partial strand of shorter length. 
-    
-    # Generate random fall off rate with: random.randint(-e, e) + d for primer of current strand being copied. 
-    # Fall-off rate means that primer falls off after copying that many bases (A, T, G, C). [Confirmed]
-    
-    # If length of area to copy is longer than strand section to be copied, will get a partial strand of shorter length. 
     for section in dnaContainer:
         
         if (primerDecayOn):
+            
+            # Generate decay/falloff rate for whatever primer will bind to the strand, if one does. 
+            decay = random.randint(-e, e) + d;
+        
+            # If max bases primer can extend to/copy is less then the length
+            # of area want copied, will only get partial copy.
+            copyLen = min(decay, ampSegLen);
             
         else:
             
             copyLen = mpSegLen;
          
-        		
-        if section.frwPrimerIndex is not -1:
-	    #
-        elif section.bkwPrimerIndex is not -1:
-            #	
-        else 
-            # incomeplete strand, likely due to previous early primer decay, strand does not get copied.
-        
-    
+
+	# build up area to be copied. 
         
         # !!! Put new strands in new container at first. Not sure if python lets the iterated container be added to, 
         # and don't want them copied till next cycle even if so!
+    
+    
 
-    return 1;
+    return 0;
 
 
 def computeAveStrandLen(dnaContainer):
@@ -201,9 +197,7 @@ def main():
     cycleCount = int(input("How many cycles should be ran?\n")); 
     completeCycles = 0;
     
-    # Ask user if want to turn on primer decay. 
-    
-    # If for any step where, for our purposes, changing the step time length would make a difference, allow time input.
+    # Ask user if want to turn on primer decay.
     
     while completeCycles < cycleCount:
         
@@ -216,15 +210,16 @@ def main():
     
     ResultPrint(dnaContainer);
     
-    # You will get bonus points if it you can add more parameters and some limitations (such as amount of primers, dNTPs, age of 
-    # taqs, temperature, mutations, …)
+    # "You will get bonus points if it you can add more parameters and some limitations (such as amount of primers, dNTPs, age of 
+    # taqs, temperature, mutations, …)"
     
     # Adding a chance for mutations which can be turned on and off seems like a good/simple one to do. 
     
     return 0; 
 
 
-
+# copy = primerFrw + buildComplimentaryStrand(strand[frwSearch + primerLen : copyLen]);
+        
 
 main();
 
