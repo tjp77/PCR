@@ -151,6 +151,7 @@ def Step3():
 
 def computeAveStrandLen(dnaContainer):
     
+    # Must count lengths of both strand1 and strand2, if exists, that is: strand2 is not " ", for each object in the dnaContainer.
     ave = 0;
     
     return ave;
