@@ -39,11 +39,7 @@ https://cdn.kastatic.org/ka-perseus-images/41f0e0fd8b49ba824db0eb707015557bb72ae
 
 #---------------------------------
 
-ampSegLen = 0; # Size of segment to copy. 
-primerLen = 20; # "Assume that the length of the original forward and backward primers are fixed at p bases (assume p = 20)."
-fragmentCount = 0; 
 d = 200; e = 50; 
-primerDecayOn = True; 
 
 
 def buildComplimentaryStrand(strand):
@@ -59,9 +55,9 @@ def buildComplimentaryStrand(strand):
      
 class DNA: 
     
-    strand2 = "";
-	frwPrimerIndex = -1;
-	bkwPrimerIndex = -1;
+    strand2 = " ";
+    frwPrimerIndex = -1;
+    bkwPrimerIndex = -1;
     
     def __init__(self, strand1, generateStrand2):
         
@@ -71,16 +67,28 @@ class DNA:
             self.strand2 = buildComplimentaryStrand(strand1);
         
         def setStrand2(self, strand):
-            self.strand2 += strand;
+            self.strand2 = strand;
 
             
 
 
-def generateDNA():  # Finish. Change to actually generate a long enough first strand. Test with this first, or comment out new code till tested. 
+def generateDNA(): 
     
-    strand1 = "AGGCTTAAAGCCTGATGCACACCGATGACTAGGCTCTCATCGAGTAGCGATCGGCCTTAAATATCCGTGATCGATGACGTACGTACTGACTGACTGTACTTAATCGTACTTCGAGCTAGTCGATGCATCGAGTTAGGCCCCTAGTCGATCTGATCGGTACGT";
+    bases = ["A", "T", "G", "C"];
+    strand1 = bases[random.randint(0, 3)];
+    #print("> ", strand1);
+    basesAdded = 0;
     
-    dna = DNA(strand1, True);
+    while basesAdded < baseDNALen - 1:
+        
+        strand1 = strand1 + bases[random.randint(0, 3)];
+        basesAdded += 1; print("> ", strand1);
+    
+    dna = DNA(strand1.upper(), True);
+    
+    
+    # Save this to file. Make easier for people to read/view the result and pick out primers.
+    # https://www.w3schools.com/python/python_file_write.asp 
 
     return dna;
     
@@ -90,19 +98,22 @@ def readInDna(fileName, isDoubleStrand, generateStrand2): # Finish.
     
     dna = "x";
     
+    # https://www.w3schools.com/python/python_file_write.asp
+    
     return dna;
 
 
 def Step1(dnaContainer): 
 
     # In the first step, the two strands of the DNA are physically separated.
-	
-	for section in dnaContainer:
-		if section.strand2 is not "":
-			dnaContainer.append(section.strand2);
-			section.strand2 = "";
-			
-    
+
+    for section in dnaContainer:
+        
+        if section.strand2 is not " ":
+            
+            dnaContainer.append(DNA(section.strand2[:], False));
+            section.strand2 = " ";
+
     return 0; 
     
     
@@ -110,7 +121,22 @@ def Step1(dnaContainer):
 
 def Step2(dnaContainer, primerFrw, primerBkw):
     
+    # search strands for primer binding locations, if find a matching spot then can attach. 
+    for section in dnaContainer:
+        
+       # print("-", section.strand2, "\n");
+        
+        # Will be -1 if nothing found, as set as default above in the DNA class. 
+        section.frwPrimerIndex = section.strand1.find(primerFrw);
+        section.bkwPrimerIndex = section.strand1.find(primerBkw);
 
+        # 'Attach' primers if the search for binding sites was succesful. 
+        if section.frwPrimerIndex is not -1:
+            section.strand2 = primerFrw;
+
+        elif section.bkwPrimerIndex is not -1:
+            section.strand2 = primerBkw;
+        
     
     return 0;
 
@@ -120,41 +146,53 @@ def Step2(dnaContainer, primerFrw, primerBkw):
 # The two DNA strands then become templates for DNA polymerase to enzymatically assemble a new DNA strand from free nucleotides, the 
 # building blocks of DNA.
 
-def Step3():
+def Step3(dnaContainer, ampSegLen, usePrimerDecay, primerLen):
+    
+    count = 0;
+    basesConsumed = 0;
     
     # If length of area to copy is longer than strand section to be copied, will get a partial strand of shorter length. 
-	    for section in dnaContainer:
+    # This will determin if a full copy is to be made, and the length of the partial if not. 
+    for section in dnaContainer:
         
-        if (primerDecayOn):
-            
-            # Generate decay/falloff rate for whatever primer will bind to the strand, if one does. 
+        print (section.strand1, "\n");
+        
+        if (usePrimerDecay):
+
             decay = random.randint(-e, e) + d;
-        
-            # If max bases primer can extend to/copy is less then the length
-            # of area want copied, will only get partial copy.
-            copyLen = min(decay, ampSegLen);
-            
+            copyLen = min(decay, ampSegLen); 
+
         else:
             
-            copyLen = mpSegLen;
-
-		
-	# Build up part to be copied into the primer 'strand2'.
+            copyLen = ampSegLen;
+         
         
-        # !!! Put new strands in new container at first. Not sure if python lets the iterated container be added to, 
-        # and don't want them copied till next cycle even if so!
-    
-    
+        if section.frwPrimerIndex is not -1 and section.frwPrimerIndex + primerLen + copyLen <= len(section.strand1):
+            
+            # Calculate area being copied. 
+            startIndex = section.frwPrimerIndex + primerLen;
+            endIndex = section.frwPrimerIndex + primerLen + copyLen;
+            
+            # Build new strand on the primer. 
+            section.strand2 = section.strand2 + buildComplimentaryStrand(section.strand1[startIndex : endIndex]);
+            count += 1;
+            basesConsumed += copyLen + primerLen;
+            
+        elif section.bkwPrimerIndex is not -1 and section.bkwPrimerIndex >= copyLen:
+            
+            # Calculate area being copied. 
+            startIndex = section.bkwPrimerIndex - copyLen;
+            endIndex = section.bkwPrimerIndex;
+            
+            # Build new strand on the primer.
+            section.strand2 = buildComplimentaryStrand(section.strand1[startIndex : endIndex]) + section.strand2;
+            count += 1;
+            basesConsumed += copyLen + primerLen;
+            
+    #print("---");
+    retVal = [count, basesConsumed]
+    return [count, basesConsumed];
 
-    return 0;
-
-
-def computeAveStrandLen(dnaContainer):
-    
-    # Must count lengths of both strand1 and strand2, if exists, that is: strand2 is not " ", for each object in the dnaContainer.
-    ave = 0;
-    
-    return ave;
     
     
 def displayLenDistribution(dnaContainer):
@@ -164,14 +202,15 @@ def displayLenDistribution(dnaContainer):
     return 0;
  
 
-def ResultPrint(dnaContainer):
+def PrintResults(dnaContainer, fragmentCount, combinedLen):
     
     # Your output: (What you might see on the gel)
     
     # 1. Statistics of the PCR products:
-    
     print ("Fragment Count: ", fragmentCount, "\n\n");
-    print (computeAveStrandLen(dnaContainer), "\n\n"); 
+    # fragment count
+    # ave strand length
+    
     displayLenDistribution(dnaContainer) 
     
     # 2. Other things you find interesting.
@@ -181,46 +220,79 @@ def ResultPrint(dnaContainer):
 
 def main():
     
-    dnaContainer = []; # List to hold either strand pairs or individual strands depending how output needs and how we choose to represent. 
+    dnaContainer = []; # List to hold DNA objects with strand pairs. 
     
-    # Get dna input sequence.
     dnaContainer.append(generateDNA());
-
-    # Get input of what each primer should be so can choose region to copy. -------- Test with premade ones here first, then add in input options. 
-    # Validate input that both entered primers are the same length, update common primer length var defined above. 
+    fragmentCount = 2;
     
-    primerFrw = "AGGCTTAAAGCCTGATGCAC"; 
+    primerFrw = "AGGCTTAAAGCCTGATGCAC"; # let be defined in file, and read in, not hard coded.
     primerBkw = "TCAGCTAGACTAGCCATGCA";
     
-    ampSegLen = int(input("What is the length of the segment you wish to copy?"));
+    primerLen = 0; # Get input 
+    baseDNALen = 0; # same
     
-    # Get cycle count input From user. 
+    combinedLen = baseDNALen * 2;
+    
+    ampSegLen = int(input("What is the length of the segment you wish to copy?"));
+     
     cycleCount = int(input("How many cycles should be ran?\n")); 
     completeCycles = 0;
     
-    # Ask user if want to turn on primer decay. 
+    usePrimerDecay = False; 
+    
+    if input("Would you like to turn on primer fall-off? (y/n)") is "y":
+        usePrimerDecay = True;
     
     while completeCycles < cycleCount:
         
         Step1(dnaContainer); 
-        Step2(dnaContainer, primerFrw, primerBkw);
-        Step3(dnaContainer);
-        completeCycles += 1;
+        Step2(dnaContainer, primerFrw, primerBkw); 
+        retVal = Step3(dnaContainer, ampSegLen, usePrimerDecay, primerLen); # print(retVal);
+        fragmentCount += retVal[0];
+        combinedLen += retVal[1];
         
-        # Print out results of each cycle, at least for checking program correctness and debugging purposes if nothing else? 
+        completeCycles += 1; 
+        # print(fragmentCount);
+
     
-    ResultPrint(dnaContainer);
-    
-    # You will get bonus points if it you can add more parameters and some limitations (such as amount of primers, dNTPs, age of 
-    # taqs, temperature, mutations, …)
-    
-    # Adding a chance for mutations which can be turned on and off seems like a good/simple one to do. 
-    
+    PrintResults(dnaContainer, fragmentCount, combinedLen);
+
+
     return 0; 
-
-
-# copy = primerFrw + buildComplimentaryStrand(strand[frwSearch + primerLen : copyLen]);
         
 
 main();
 
+
+
+"""
+TODO:
+
+[] Read primers from file also? User, us or who ever, would have to look at the giant dna strand and figure out what they want.
+    not really a run time thing.
+    
+[] Finish user input sections in main.
+
+[] Finish generate DNA function.
+
+[] add menu at program start, choose between just generating a dna strand, with that function, or doing pcr sim 
+    > Could have just menu in main, moving most of what's there to "PCR" function, redcuing clutter for this ^. 
+
+[] complete read dna from file function, make that first thing done to get dna to work on before doing PCR
+
+[] optional: Pull in rna data from genbank, convert to dna ( function sinilar to buildComplimentaryStrand() ), and use that in program instead.
+
+[] Finish output display and length distrubtion function.
+
+[] maybe include the primer start indices in the output for user reference?
+
+[] optional-bonus: Add in possibility for mutations or any other potential parameters during the copy process
+    "you will get bonus points if it you can add more parameters and some limitations (such as amount of primers, dNTPs, age of taqs, temperature, 
+    mutations, …)"
+
+[] validate user input
+
+[] rename step functions to appropriate step names
+
+
+"""
