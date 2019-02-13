@@ -69,9 +69,7 @@ class DNA:
         def setStrand2(self, strand):
             self.strand2 = strand;
 
-            
-
-
+			
 def generateDNA(): 
     
     bases = ["A", "T", "G", "C"];
@@ -89,6 +87,7 @@ def generateDNA():
     
     # Save this to file. Make easier for people to read/view the result and pick out primers.
     # https://www.w3schools.com/python/python_file_write.asp 
+	# Maybe print out instructions so user knows how was saved, and how to add primers.
 
     return dna;
     
@@ -98,7 +97,7 @@ def readInDna(fileName, isDoubleStrand, generateStrand2): # Finish.
     
     dna = "x";
     
-    # https://www.w3schools.com/python/python_file_write.asp
+    # https://www.w3schools.com/python/python_file_open.asp
     
     return dna;
 
@@ -207,6 +206,7 @@ def PrintResults(dnaContainer, fragmentCount, combinedLen):
     # Your output: (What you might see on the gel)
     
     # 1. Statistics of the PCR products:
+	
     print ("Fragment Count: ", fragmentCount, "\n\n");
     # fragment count
     # ave strand length
@@ -229,7 +229,7 @@ def main():
     primerBkw = "TCAGCTAGACTAGCCATGCA";
     
     primerLen = 0; # Get input 
-    baseDNALen = 0; # same
+    baseDNALen = 0; # same (maybe be able to figure out through code by getting lenth of the input read when reading the dna strand from file)
     
     combinedLen = baseDNALen * 2;
     
@@ -268,31 +268,34 @@ main();
 """
 TODO:
 
-[] Read primers from file also? User, us or who ever, would have to look at the giant dna strand and figure out what they want.
-    not really a run time thing.
+[] Read primers from file also? User, us or whoever, would have to look at the giant dna strand and figure out what they want.
+    not really a run time thing. Could then just include one we did the generation for and picked primers for with the code
+	as a default/for testing. 
     
 [] Finish user input sections in main.
 
 [] Finish generate DNA function.
 
-[] add menu at program start, choose between just generating a dna strand, with that function, or doing pcr sim 
+[] Add menu at program start, choose between just generating a dna strand, with that ^ function, or doing pcr sim. 
     > Could have just menu in main, moving most of what's there to "PCR" function, redcuing clutter for this ^. 
+	> actually, everything in main would have to go to pcr fucntion that way. Leaving anything in would just 
+	> require more argument passing for no reason. 
 
-[] complete read dna from file function, make that first thing done to get dna to work on before doing PCR
-
-[] optional: Pull in rna data from genbank, convert to dna ( function sinilar to buildComplimentaryStrand() ), and use that in program instead.
+[] Complete read dna from file function, make that first thing done in the program to get dna to work on before doing PCR
+	> Have user specify the file name, or make default/required file name ( whatever we'd set it to in generate/write file funct. 
 
 [] Finish output display and length distrubtion function.
 
 [] maybe include the primer start indices in the output for user reference?
 
+[] validate user input
+
+[] rename step functions to appropriate step names if have time. 
+
 [] optional-bonus: Add in possibility for mutations or any other potential parameters during the copy process
     "you will get bonus points if it you can add more parameters and some limitations (such as amount of primers, dNTPs, age of taqs, temperature, 
     mutations, …)"
 
-[] validate user input
-
-[] rename step functions to appropriate step names
-
+[] optional: Pull in rna data from genbank, convert to dna ( function similar to buildComplimentaryStrand() ), and use that in program instead.
 
 """
