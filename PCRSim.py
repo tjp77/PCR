@@ -3,6 +3,8 @@ import random;
 import re;
 import sys;
 
+from collections import defaultdict
+
 
 #---------- Misc. Notes ----------
 
@@ -40,7 +42,8 @@ https://cdn.kastatic.org/ka-perseus-images/41f0e0fd8b49ba824db0eb707015557bb72ae
 
 #---------------------------------
 
-d = 200; e = 50; 
+d = 200; 
+e = 50;
 
 
 def buildComplimentaryStrand(strand):
@@ -126,7 +129,7 @@ def readInDna():
     
     retVal = [dna, primer1, primer2];
     return retVal;
-
+    
 
 def RunDenaturation(dnaContainer): 
 
@@ -169,7 +172,7 @@ def RunAnnealing(dnaContainer, primer1, primer2, bindingSite1, bindingSite2):
 # The two DNA strands then become templates for DNA polymerase to enzymatically assemble a new DNA strand from free nucleotides, the 
 # building blocks of DNA.
 
-def RunExtension(dnaContainer, ampSegLen, usePrimerDecay, primerLen):
+def RunExtension(dnaContainer, ampSegLen, primerLen, lengthDistributions):
     
     count = 0;
     basesConsumed = 0;
@@ -178,18 +181,14 @@ def RunExtension(dnaContainer, ampSegLen, usePrimerDecay, primerLen):
     # This will determin if a full copy is to be made, and the length of the partial if not. 
     for section in dnaContainer:
         
-        print (section.strand1, "\n");
+        #print (section.strand1, "\n");
         
-        if (usePrimerDecay):
-
-            decay = random.randint(-e, e) + d;
-            copyLen = min(decay, ampSegLen); 
-
-        else:
-            
-            copyLen = ampSegLen;
+        taqDecay = random.randint(-e, e) + d;
+        copyLen = min(taqDecay, ampSegLen); 
+        
+        # Python str[:] copy tested in console, if endIndex is higher then the str length, will just copy as many as can. 
          
-        if section.primer1Index != -1 and section.primer1Index + primerLen + copyLen <= len(section.strand1):
+        if section.primer1Index != -1:
             
             # Calculate area being copied. 
             startIndex = section.primer1Index + primerLen;
@@ -200,53 +199,74 @@ def RunExtension(dnaContainer, ampSegLen, usePrimerDecay, primerLen):
             count += 1;
             basesConsumed += copyLen + primerLen;
             
-        elif section.primer2Index != -1 and section.primer2Index >= copyLen:
+        elif section.primer2Index != -1:
             
             # Calculate area being copied. 
             startIndex = section.primer2Index - copyLen;
             endIndex = section.primer2Index;
             
+            if startIndex < 0:
+                startIndex = 0;
+            
             # Build new strand on the primer.
             section.strand2 = buildComplimentaryStrand(section.strand1[startIndex : endIndex]) + section.strand2;
             count += 1;
             basesConsumed += copyLen + primerLen;
-            
-    print("---end cycle");
+        
+        
+        lengthDistributions[len(section.strand2)] += 1;
+    
     retVal = [count, basesConsumed]
     return [count, basesConsumed];
 
  
 
-def PrintResults(dnaContainer, fragmentCount, combinedLen): #, lenDistributionContainer
+def PrintResults(dnaContainer, fragmentCount, combinedLen, lengthDistributions): 
     
     ave = combinedLen // fragmentCount;
     
     # 1. Statistics of the PCR products:
     
-    print ("Fragment Count: ", fragmentCount, "\n\n");
-    print ("Ave. Strand Length: ", combinedLen / fragmentCount, "\n\n");
+    print ("\nFragment Count: ", fragmentCount);
+    print ("Ave. Strand Length: ", combinedLen / fragmentCount");
+    print ("\nLength Distribution: ");
     
-    #for len in lenDistributionContainer:
-    #    print("# strands of length ", "key", "value");
+    for len in lengthDistributions:
+        print(len, "bases:", lengthDistributions[len]);
 
     return 0;
+
+
+def getGCContent(primer):
+    
+    stability = 0;
+    
+    # 40-60% good. 
+    # return overall GC content, if too high, loose primers to stciking.
+    # can pass to extentsion function too, if too low, lower by rand range how long sticks and how much copied. 
+    
+    
+    return stability;
 
 
 def PCR():
     
     # List to hold DNA objects with strand pairs. 
-    dnaContainer = [];  
+    dnaContainer = []; 
+    lengthDistributions = defaultdict(lambda: 0);
     
     fileInput = readInDna();
     
     dnaContainer.append(fileInput[0]);
     fragmentCount = 2;
     
+    lengthDistributions[len(fileInput[0].strand1)] += 2;
+    
     primer1 = fileInput[1]; 
     primer2 = fileInput[2]; 
     
     bindingSite1 = buildComplimentaryStrand(primer1);  
-    bindingSite2 = buildComplimentaryStrand(primer2);  
+    bindingSite2 = buildComplimentaryStrand(primer2); 
     
     primerLen = len(primer1); 
     baseDNALen = len(dnaContainer[0].strand1);
@@ -258,22 +278,21 @@ def PCR():
     cycleCount = int(input("How many cycles should be ran?\n")); 
     completeCycles = 0;
     
-    usePrimerDecay = False; 
+    availablePrimers = cycleCount * 1.2;
     
-    if input("Would you like to turn on primer fall-off? (y/n)") == "y": 
-        usePrimerDecay = True; 
-    
-    while completeCycles < cycleCount:
+    while completeCycles < cycleCount and availablePrimers > 0:
         
         RunDenaturation(dnaContainer); 
         RunAnnealing(dnaContainer, primer1, primer2, bindingSite1, bindingSite2); 
-        retVal = RunExtension(dnaContainer, ampSegLen, usePrimerDecay, primerLen); 
+        retVal = RunExtension(dnaContainer, ampSegLen, primerLen, lengthDistributions); 
+        
         fragmentCount += retVal[0];
+        availablePrimers -= retVal[0];
         combinedLen += retVal[1];
         
-        completeCycles += 1; 
+        completeCycles += 1; # lengthDistributions[len(section.strand1)] += 1;
     
-    PrintResults(dnaContainer, fragmentCount, combinedLen);
+    PrintResults(dnaContainer, fragmentCount, combinedLen, lengthDistributions);
 
 
     return 0;
@@ -312,13 +331,25 @@ main();
 TODO:
 
 
-[] Finish length distrubtion section.
+
+[] Option turn primers limit on and off. 
+
+
+
+------------
+
+
+
+[] finish gc clamp func. and then add in some where. 
+
+[] if limit primers, could have some of them bunch up (by even number) and becoem unuseable is too much GC in primers, instead of clamps. 
+    > Set a bit more then what needed for max copies for given cycles, then the taq decay, primer fall-off, and sticking together would limit more. 
 
 
 
 -----OPTIONAL-----
 
-[] Allow G/C content at ends of primers to affect 'stickiness'.
+[] Allow G/C content at ends of primers to affect 'stickiness'. 
 
 [] Add in convert file strands from RNA to DNA so user can add genback stuff.
 
