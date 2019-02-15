@@ -5,43 +5,6 @@ import sys;
 
 from collections import defaultdict
 
-
-#---------- Misc. Notes ----------
-
-"""
-two DNA primers that are complementary to the 3' (three prime) ends of each of the sense and anti-sense strands of the DNA target
-specific primers that are complementary to the DNA target region are selected beforehand, and are often custom-made in a laboratory
-
-"2. Your original DNA template is of n base-pairs (assume n = 2000 for your test case if you generate your template randomly).
-3. The size of the DNA segment to be amplified is m (assume m = 200 if the template is generated randomly). "
-
-https://teaching.ncl.ac.uk/bms/wiki/index.php/DNTP
-
-list.append() adds its argument as a single element to the end of a list. The length of the list itself will increase by one.
-list.extend() iterates over its argument adding each element to the list, extending the list. The length of the list will increase by however many elements were in the iterable argument.
-
-https://www.khanacademy.org/science/biology/biotech-dna-technology/dna-sequencing-pcr-electrophoresis/a/polymerase-chain-reaction-pcr
-
-------More straight forward step description:------
-
-!) Denaturation (96°C): Heat the reaction strongly to separate, or denature, the DNA strands. This provides single-stranded template for the next step.
-2) Annealing (5555 - 6565°C): Cool the reaction so the primers can bind to their complementary sequences on the single-stranded template DNA.
-3) Extension (72°C): Raise the reaction temperatures so Taq polymerase extends the primers, synthesizing new strands of DNA.
-
-"There are many copies of the primers and many molecules of Taq polymerase floating around in the reaction, so the number of DNA molecules can roughly double in each round of cycling."
-
-Turn off primer decay,and use the below to test # copies made:
-"Optimally, the formula used to calculate the number of DNA copies formed after a given number of cycles is 2n, where n is the number of cycles. Thus, a reaction set for 30 cycles results in 230, or 1073741824, copies of the original double-stranded DNA target region." 
-
-Video with good animation of copying process and copy strand lengths. 
-https://www.youtube.com/watch?v=JmveVAYKylk
-
-https://cdn.kastatic.org/ka-perseus-images/41f0e0fd8b49ba824db0eb707015557bb72ae72b.png
-
-"""
-
-#---------------------------------
-
 d = 200; 
 e = 50;
 
@@ -61,7 +24,7 @@ class DNA:
     
     strand2 = " ";
     primer1Index = -1;
-    prime2rIndex = -1;
+    primer2Index = -1;
     
     def __init__(self, strand1, generateStrand2):
         
@@ -111,11 +74,11 @@ def readInDna():
         
         strand1 = file.readline(); 
         strand2 = file.readline(); 
-        dna = DNA(strand1.strip(), False); 
-        dna.setStrand2(strand2.strip());
+        dna = DNA(strand1.strip().upper(), False); 
+        dna.setStrand2(strand2.strip().upper());
 
-        primer1 = file.readline().strip(); 
-        primer2 = file.readline().strip(); 
+        primer1 = file.readline().strip().upper(); 
+        primer2 = file.readline().strip().upper(); 
         
     except:
         
@@ -130,7 +93,8 @@ def readInDna():
     retVal = [dna, primer1, primer2];
     return retVal;
     
-
+    
+# Step 1, the two strands of the DNA are physically separated.
 def RunDenaturation(dnaContainer): 
 
     # In the first step, the two strands of the DNA are physically separated.
@@ -145,33 +109,37 @@ def RunDenaturation(dnaContainer):
     return 0; 
     
     
-# Step 2 function. Primers bind to DNA.
-
-def RunAnnealing(dnaContainer, primer1, primer2, bindingSite1, bindingSite2):
+# Step, primers bind to DNA.
+def RunAnnealing(dnaContainer, primers, bindingSites, availablePrimers, limitPrimers):
     
     # search strands for primer binding locations, if find a matching spot then can attach. 
     for section in dnaContainer:
         
         # Will be -1 if nothing found, as set as default above in the DNA class. 
-        section.primer1Index = section.strand1.find(bindingSite1); 
-        section.primer2Index = section.strand1.find(bindingSite2);
+        if limitPrimers == False or availablePrimers[0] > 0:
+            section.primer1Index = section.strand1.find(bindingSites[1]); 
+        else:
+            section.primer1Index = -1;
+            
+        if limitPrimers == False or availablePrimers[1] > 0:
+            section.primer2Index = section.strand1.find(bindingSites[2]);
+        else:
+            section.primer2Index = -1;
         
         # 'Attach' primers if the search for binding sites was succesful. 
         if section.primer1Index != -1:
-            section.strand2 = primer1; 
+            section.strand2 = primers[1];
+            availablePrimers[0] -= 1; 
 
         elif section.primer2Index != -1:
-            section.strand2 = primer2; 
+            section.strand2 = primers[2]; 
+            availablePrimers[1] -= 1;
         
     
     return 0;
 
 
 # Step 3 function. Build copy off of primer, based on DNA.
-
-# The two DNA strands then become templates for DNA polymerase to enzymatically assemble a new DNA strand from free nucleotides, the 
-# building blocks of DNA.
-
 def RunExtension(dnaContainer, ampSegLen, primerLen, lengthDistributions):
     
     count = 0;
@@ -221,35 +189,65 @@ def RunExtension(dnaContainer, ampSegLen, primerLen, lengthDistributions):
 
  
 
-def PrintResults(dnaContainer, fragmentCount, combinedLen, lengthDistributions): 
-    
-    ave = combinedLen // fragmentCount;
+def PrintResults(dnaContainer, gcContents, fragmentCount, combinedLen, lengthDistributions): 
     
     # 1. Statistics of the PCR products:
-    
+    print ("\nPCR Complete - Results:\n")
+    print ("\nPrimer 1 Clamp GC Content: ", gcContents[1]);
+    print ("Primer 2 Clamp GC Content: ", gcContents[2]);
     print ("\nFragment Count: ", fragmentCount);
-    print ("Ave. Strand Length: ", combinedLen / fragmentCount");
+    print ("Ave. Strand Length: ", combinedLen / fragmentCount);
     print ("\nLength Distribution: ");
     
+    try:
+        del lengthDistributions[1];
+    except KeyError:
+        pass
+    
     for len in lengthDistributions:
-        print(len, "bases:", lengthDistributions[len]);
+        print("Strands with", len, "bases:", lengthDistributions[len]);
 
     return 0;
 
 
 def getGCContent(primer):
     
-    stability = 0;
+    # https://www.biocompare.com/Bench-Tips/133581-Primers-by-Design-Tips-for-Optimal-DNA-Primer-Design/
+    # "The presence of G and C bases at the 3′ end of the primer—the GC clamp—helps promote correct binding at the 3′ end because of 
+    # the stronger hydrogen bonding of G and C bases. GC bonds contribute more to the stability—i.e., increased melting temperatures—of 
+    # primer and template, binding more than AT bonds. Primers with 40% to 60% GC content ensure stable binding of primer and template. 
+    # However, sequences containing more than three repeats of sequences of G or C in sequence should be avoided in the first five bases 
+    # (!) from the 3′ end of the primer because of the higher probability of primer-dimer formation."  
+     
+    # From other site: Clamp Region is first 5 bases of the 3' end of the primer. 
     
-    # 40-60% good. 
-    # return overall GC content, if too high, loose primers to stciking.
-    # can pass to extentsion function too, if too low, lower by rand range how long sticks and how much copied. 
+    gcContent = ( ( primer.count('G') + primer.count('C') ) / len(primer[0:6]) ) * 100; 
     
+    return gcContent;
+
+
+def setPrimerQuantity(gcContents):
     
-    return stability;
+    primerCount1 = int(input("How many copies of primer 1 should there be?\n"));
+    primerCount2 = int(input("How many copies of primer 2 should there be?\n"));
+    impact = 0;
+    
+    if gcContents[1] > 60:
+        
+         primerCount1 -= primerCount1 // (gcContents[1] - 60);
+        
+    if gcContents[2] > 60:
+        
+        primerCount2 -= primerCount2 // (gcContents[2] - 60);
+    
+    primerCounts = [primerCount1, primerCount2];
+    
+    return primerCounts;
 
 
 def PCR():
+    
+    # __________ SetUp __________
     
     # List to hold DNA objects with strand pairs. 
     dnaContainer = []; 
@@ -259,40 +257,50 @@ def PCR():
     
     dnaContainer.append(fileInput[0]);
     fragmentCount = 2;
-    
     lengthDistributions[len(fileInput[0].strand1)] += 2;
     
-    primer1 = fileInput[1]; 
-    primer2 = fileInput[2]; 
+    # Offset item used to keep designaitions of primer "1" and primer "2" for easier tracking/modling. 
+    primers = ( 0, fileInput[1], fileInput[2] ); 
+    bindingSites = ( 0, buildComplimentaryStrand(primers[1]), buildComplimentaryStrand(primers[2]) ); 
+    gcContents = ( 0, getGCContent(primers[1][::-1]), getGCContent(primers[2]) );
     
-    bindingSite1 = buildComplimentaryStrand(primer1);  
-    bindingSite2 = buildComplimentaryStrand(primer2); 
-    
-    primerLen = len(primer1); 
+    primerLen = len(primers[1]); 
     baseDNALen = len(dnaContainer[0].strand1);
-    
     combinedLen = baseDNALen * 2;
     
-    ampSegLen = int(input("What is the length of the segment you wish to copy?"));
+    ampSegLen = int(input("What is the length of the segment you wish to copy?\n"));
      
     cycleCount = int(input("How many cycles should be ran?\n")); 
     completeCycles = 0;
     
-    availablePrimers = cycleCount * 1.2;
+    limitPrimers = False; 
+    availablePrimers = [0, 0];
+    userInput = " "; 
     
-    while completeCycles < cycleCount and availablePrimers > 0:
+    while userInput not in ["y", "Y", "n", "N"]:
+        
+        userInput = input("Turn on primer limitations? Primer quantity will be limited to a starting amount you enter, and GC content will have an affect. (y/n)");
+    
+    if userInput == "y" or userInput == "Y":
+        
+        limitPrimers = True; 
+        availablePrimers = setPrimerQuantity(gcContents);  
+    
+    # ___________________________
+    
+    while completeCycles < cycleCount:
         
         RunDenaturation(dnaContainer); 
-        RunAnnealing(dnaContainer, primer1, primer2, bindingSite1, bindingSite2); 
+        RunAnnealing(dnaContainer, primers, bindingSites, availablePrimers, limitPrimers); 
         retVal = RunExtension(dnaContainer, ampSegLen, primerLen, lengthDistributions); 
         
         fragmentCount += retVal[0];
-        availablePrimers -= retVal[0];
+        
         combinedLen += retVal[1];
         
-        completeCycles += 1; # lengthDistributions[len(section.strand1)] += 1;
+        completeCycles += 1; 
     
-    PrintResults(dnaContainer, fragmentCount, combinedLen, lengthDistributions);
+    PrintResults(dnaContainer, gcContents, fragmentCount, combinedLen, lengthDistributions);
 
 
     return 0;
@@ -306,7 +314,7 @@ def main():
     
     while menuChoice < 1 or menuChoice > 2:
         
-        menuChoice = int(input("What would you like to do?"));
+        menuChoice = int(input("What would you like to do?\n"));
     
     if menuChoice == 1:
         
@@ -323,40 +331,7 @@ def main():
     return 0; 
         
 
+
 main();
 
 
-
-"""
-TODO:
-
-
-
-[] Option turn primers limit on and off. 
-
-
-
-------------
-
-
-
-[] finish gc clamp func. and then add in some where. 
-
-[] if limit primers, could have some of them bunch up (by even number) and becoem unuseable is too much GC in primers, instead of clamps. 
-    > Set a bit more then what needed for max copies for given cycles, then the taq decay, primer fall-off, and sticking together would limit more. 
-
-
-
------OPTIONAL-----
-
-[] Allow G/C content at ends of primers to affect 'stickiness'. 
-
-[] Add in convert file strands from RNA to DNA so user can add genback stuff.
-
-[] optional-bonus: Add in possibility for mutations or any other potential parameters during the copy process
-    "you will get bonus points if it you can add more parameters and some limitations (such as amount of primers, dNTPs, age of taqs, temperature, 
-    mutations, …)"
-    
-    > Maybe number of primers limit? Rand? User set? Eh. 
-
-"""
