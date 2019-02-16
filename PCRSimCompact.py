@@ -294,11 +294,6 @@ def PCR():
     
     # __________ Run of PCR Experiment __________
     
-    # Although each step is, in reality, applied to all strands at once, each strand here undergoes all three
-    # steps before another strand is operated on. Because the strands do not affect one another, this change 
-    # does not affect the result, but cuts down the number of times the list of strands is iteracted through 
-    # during each cycle from 3 to 1. 
-    
     while completeCycles < cycleCount:
         
         for section in dnaContainer:
