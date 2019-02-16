@@ -42,7 +42,7 @@ def generateDNA():
     bases = ["A", "T", "G", "C"];
     strand1 = bases[random.randint(0, 3)];
     basesAdded = 0;
-
+    
     baseDNALen = int(input("Enter the length of the strand to generate:\n"));
     
     while basesAdded < baseDNALen - 1:
@@ -76,7 +76,7 @@ def readInDna():
         strand2 = file.readline(); 
         dna = DNA(strand1.strip().upper(), False); 
         dna.setStrand2(strand2.strip().upper());
-
+    
         primer1 = file.readline().strip().upper(); 
         primer2 = file.readline().strip().upper(); 
         
@@ -92,6 +92,7 @@ def readInDna():
     
     retVal = [dna, primer1, primer2];
     return retVal;
+    
     
     
 # Step 1, the two strands of the DNA are physically separated.
@@ -149,7 +150,7 @@ def RunExtension(dnaContainer, ampSegLen, primerLen, lengthDistributions):
     # This will determin if a full copy is to be made, and the length of the partial if not. 
     for section in dnaContainer:
         
-        #print (section.strand1, "\n");
+        # print (section.strand1, "\n"); # Uncomment to display all current strands existing at the start of each cycle. 
         
         taqDecay = random.randint(-e, e) + d;
         copyLen = min(taqDecay, ampSegLen); 
@@ -188,25 +189,27 @@ def RunExtension(dnaContainer, ampSegLen, primerLen, lengthDistributions):
     return [count, basesConsumed];
 
  
+ 
 
 def PrintResults(dnaContainer, gcContents, fragmentCount, combinedLen, lengthDistributions): 
     
-    # 1. Statistics of the PCR products:
-    print ("\nPCR Complete - Results:\n")
-    print ("\nPrimer 1 Clamp GC Content: ", gcContents[1]);
-    print ("Primer 2 Clamp GC Content: ", gcContents[2]);
-    print ("\nFragment Count: ", fragmentCount);
-    print ("Ave. Strand Length: ", combinedLen / fragmentCount);
-    print ("\nLength Distribution: ");
+    # 1. Statistics Output of the PCR products:
+    print("\nPCR Complete - Results:")
+    print("\nPrimer 1 Clamp GC Content: ", gcContents[1]);
+    print("Primer 2 Clamp GC Content: ", gcContents[2]);
+    print("\nFragment Count: ", fragmentCount);
+    print("Ave. Strand Length: ", combinedLen / fragmentCount);
+    print("\nLength Distribution: ");
     
     try:
         del lengthDistributions[1];
+        
     except KeyError:
         pass
     
     for len in lengthDistributions:
         print("Strands with", len, "bases:", lengthDistributions[len]);
-
+    
     return 0;
 
 
@@ -218,7 +221,7 @@ def getGCContent(primer):
     # primer and template, binding more than AT bonds. Primers with 40% to 60% GC content ensure stable binding of primer and template. 
     # However, sequences containing more than three repeats of sequences of G or C in sequence should be avoided in the first five bases 
     # (!) from the 3′ end of the primer because of the higher probability of primer-dimer formation."  
-     
+    
     # From other site: Clamp Region is first 5 bases of the 3' end of the primer. 
     
     gcContent = ( ( primer.count('G') + primer.count('C') ) / len(primer[0:6]) ) * 100; 
@@ -247,7 +250,7 @@ def setPrimerQuantity(gcContents):
 
 def PCR():
     
-    # __________ SetUp __________
+    # __________ PCR Environment SetUp __________
     
     # List to hold DNA objects with strand pairs. 
     dnaContainer = []; 
@@ -269,7 +272,7 @@ def PCR():
     combinedLen = baseDNALen * 2;
     
     ampSegLen = int(input("What is the length of the segment you wish to copy?\n"));
-     
+    
     cycleCount = int(input("How many cycles should be ran?\n")); 
     completeCycles = 0;
     
@@ -286,7 +289,8 @@ def PCR():
         limitPrimers = True; 
         availablePrimers = setPrimerQuantity(gcContents);  
     
-    # ___________________________
+    
+    # __________ Run of PCR Experiment __________
     
     while completeCycles < cycleCount:
         
@@ -298,10 +302,14 @@ def PCR():
         
         combinedLen += retVal[1];
         
-        completeCycles += 1; 
+        completeCycles += 1;  
+    
+    print("\nPCR Complete.\n");
+    
+    
+    # __________ Experiment Completion & Results __________
     
     PrintResults(dnaContainer, gcContents, fragmentCount, combinedLen, lengthDistributions);
-
 
     return 0;
 
@@ -310,7 +318,7 @@ def main():
     
     menuChoice = 0;
     
-    print ("1) Generate random DNA strands to file. \n[WARNING: This will overide existing data in pcrData.txt]\n\n2) Run PCR on pcrData.txt contents.\n");
+    print("1) Generate random DNA strands to file. \n[WARNING: This will overide existing data in pcrData.txt]\n\n2) Run PCR on pcrData.txt contents.\n");
     
     while menuChoice < 1 or menuChoice > 2:
         
@@ -327,11 +335,10 @@ def main():
     else:
         
         print("Menu input error.");
-
+    
     return 0; 
         
 
 
 main();
-
 
