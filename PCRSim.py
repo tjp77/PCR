@@ -53,14 +53,51 @@ def generateDNA():
     dna = DNA(strand1.upper(), True);
     
     file = open("pcrData.txt", "w");
-    data = dna.strand1 + "\n" + dna.strand2
+    data = dna.strand1 + "\n" + dna.strand2;
     file.write(data);
     
     print("\nDNA Generated. Data saved to file 'pcrData.txt', in format required for PCR simulation, as follows: ");
     print("Lines 1 & 2: One strand of the DNA each. \n\nTo specify primers, add to that file as follows: \nLine 3: Forward primer. \nLine 4: Backward primer.\n\n[No whitepsace allowed]");
+    
+    file.close();
 
     return dna;
+
+
+def GeneratePrimers():
     
+    
+    try:
+        
+        file = open("pcrData.txt", "r");
+        strand1 = file.readline(); 
+        strand2 = file.readline();
+        file.close();
+        
+        print("This Function will generate primers from the DNA regions around the one you wish to copy, based on the DNA strands found in pcrData.txt.");
+        start = int(input("What is the start base position of the segment you wish to copy?"));
+        segLen = int(input("What is the length of the segment you wish to copy?"));
+        primerLen = int(input("What length do you want the primers to be?"));
+        
+        primer1 = strand2[start - primerLen : start]; 
+        primer2 = strand1[start + segLen : start + segLen + primerLen]; 
+        
+        file = open("pcrData.txt", "a");
+        output = "\n" + primer1 + "\n" + primer2; 
+        file.write(output);
+        file.close();
+        
+    except:
+        
+        print("Trouble reading input file 'pcrData.txt'. Make sure file exists and is in correct format, with the DNA strands you wish to work with."); 
+        print("Input format may be incorrect. Refer to documentation for correct format.");
+        sys.exit(0);
+    
+    else:
+        
+        print("\nPrimer data generated and saved to pcrData.txt successfully.\n");
+    
+    return 0;
     
     
 def readInDna():
@@ -90,6 +127,7 @@ def readInDna():
         
         print("\npcrData.txt read successfully.\n");
     
+    file.close();
     retVal = [dna, primer1, primer2];
     return retVal;
     
@@ -97,9 +135,7 @@ def readInDna():
     
 # Step 1, the two strands of the DNA are physically separated.
 def RunDenaturation(dnaContainer): 
-
-    # In the first step, the two strands of the DNA are physically separated.
-
+    
     for section in dnaContainer:
         
         if section.strand2 != " ":
@@ -145,15 +181,15 @@ def RunExtension(dnaContainer, ampSegLen, primerLen, lengthDistributions):
     
     count = 0;
     basesConsumed = 0;
-    
-    # If length of area to copy is longer than strand section to be copied, will get a partial strand of shorter length. 
-    # This will determin if a full copy is to be made, and the length of the partial if not. 
+     
     for section in dnaContainer:
         
         # print (section.strand1, "\n"); # Uncomment to display all current strands existing at the start of each cycle. 
         
-        taqDecay = random.randint(-e, e) + d;
-        copyLen = min(taqDecay, ampSegLen); 
+        # If length of area to copy is longer than strand section to be copied, will get a partial strand of shorter length. 
+        # This will determin if a full copy is to be made, and the length of the partial if not.
+        taqDecay = random.randint(-e, e) + d; 
+        copyLen = min(taqDecay, ampSegLen + primerLen); 
         
         # Python str[:] copy tested in console, if endIndex is higher then the str length, will just copy as many as can. 
          
@@ -318,17 +354,21 @@ def main():
     
     menuChoice = 0;
     
-    print("1) Generate random DNA strands to file. \n[WARNING: This will overide existing data in pcrData.txt]\n\n2) Run PCR on pcrData.txt contents.\n");
+    print("1) Generate random DNA strands to file. \n[WARNING: This will overide existing data in pcrData.txt]\n\n2) Generate primers based on copy region.[This will sav them to the data file as required]\n\n3) Run PCR on pcrData.txt contents.\n");
     
-    while menuChoice < 1 or menuChoice > 2:
+    while menuChoice < 1 or menuChoice > 3:
         
         menuChoice = int(input("What would you like to do?\n"));
     
     if menuChoice == 1:
         
         generateDNA()
-        
+      
     elif menuChoice == 2:
+        
+        GeneratePrimers();
+        
+    elif menuChoice == 3:
         
         PCR();
         
