@@ -243,7 +243,7 @@ def PrintResults(dnaContainer, gcContents, fragmentCount, combinedLen, lengthDis
     except KeyError:
         pass
     
-    for len in lengthDistributions:
+    for len in sorted(lengthDistributions.keys()):
         print("Strands with", len, "bases:", lengthDistributions[len]);
     
     return 0;
