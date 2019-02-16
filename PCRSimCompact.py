@@ -119,6 +119,7 @@ def Anneal(section, primers, bindingSites, availablePrimers, limitPrimers):
     else:
         section.primer1Index = -1;
         
+    
     if limitPrimers == False or availablePrimers[1] > 0:
         
         section.primer2Index = section.strand1.find(bindingSites[2]);
@@ -203,6 +204,7 @@ def PrintResults(dnaContainer, gcContents, fragmentCount, combinedLen, lengthDis
     
     try:
         del lengthDistributions[1];
+        
     except KeyError:
         pass
     
@@ -313,7 +315,8 @@ def PCR():
             combinedLen += retVal[1];
         
         completeCycles += 1; 
-        print("---end cycle---\n");
+    
+    print("\nPCR Complete.\n");
     
     
     # __________ Experiment Completion & Results __________
