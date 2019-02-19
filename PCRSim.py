@@ -75,7 +75,7 @@ def GeneratePrimers():
         file.close();
         
         print("This Function will generate primers from the DNA regions around the one you wish to copy, based on the DNA strands found in pcrData.txt.");
-        start = int(input("What is the start base position of the segment you wish to copy?"));
+        start = int(input("What is the start base position of the segment you wish to copy (not including primers)?"));
         segLen = int(input("What is the length of the segment you wish to copy?"));
         primerLen = int(input("What length do you want the primers to be?"));
         
@@ -154,21 +154,25 @@ def RunAnnealing(dnaContainer, primers, bindingSites, availablePrimers, limitPri
         
         # Will be -1 if nothing found, as set as default above in the DNA class. 
         if limitPrimers == False or availablePrimers[0] > 0:
+            
             section.primer1Index = section.strand1.find(bindingSites[1]); 
         else:
             section.primer1Index = -1;
             
         if limitPrimers == False or availablePrimers[1] > 0:
+            
             section.primer2Index = section.strand1.find(bindingSites[2]);
         else:
             section.primer2Index = -1;
         
         # 'Attach' primers if the search for binding sites was succesful. 
         if section.primer1Index != -1:
+            
             section.strand2 = primers[1];
             availablePrimers[0] -= 1; 
 
         elif section.primer2Index != -1:
+            
             section.strand2 = primers[2]; 
             availablePrimers[1] -= 1;
         
@@ -284,6 +288,38 @@ def setPrimerQuantity(gcContents):
     return primerCounts;
 
 
+def CheckPrimers(dnaSegment, primer1, primer2):
+    
+    multOccurring = False;
+    
+    p1s2 = dnaSegment.strand2.find(primer1);
+    
+    p1s1Base = dnaSegment.strand1.find(primer1);
+    p1s1 = dnaSegment.strand1[p1s1Base + 1:].find(primer1);
+    
+    if p1s2 != -1 or p1s1 != -1:
+        
+        print("Primer 1, strand 1 binding primer, is not unique within the strands. ");
+        multOccurring = True;
+    
+    p2s1 = dnaSegment.strand1.find(primer2);
+    
+    p2s2Base = dnaSegment.strand2.find(primer2);
+    p2s2 = dnaSegment.strand2[p2s2Base + 1:].find(primer2);
+    
+    if p2s1 != -1 or p2s2 != -1:
+        
+        print("Primer 2, strand 2 binding primer, is not unique within the strands. ");
+        multOccurring = True;
+    
+    if multOccurring == True:
+        
+        print("This will lead to primers binding to incorrect regions, compromising the PCR process. Please create new primers.\n");
+        sys.exit(0);
+    
+    return 0;
+
+
 def PCR():
     
     # __________ PCR Environment SetUp __________
@@ -302,6 +338,8 @@ def PCR():
     primers = ( 0, fileInput[1], fileInput[2] ); 
     bindingSites = ( 0, buildComplimentaryStrand(primers[1]), buildComplimentaryStrand(primers[2]) ); 
     gcContents = ( 0, getGCContent(primers[1][::-1]), getGCContent(primers[2]) );
+    
+    CheckPrimers(fileInput[0], primers[1], primers[2]);
     
     primerLen = len(primers[1]); 
     baseDNALen = len(dnaContainer[0].strand1);
@@ -354,7 +392,11 @@ def main():
     
     menuChoice = 0;
     
-    print("1) Generate random DNA strands to file. \n[WARNING: This will overide existing data in pcrData.txt]\n\n2) Generate primers based on copy region.[This will sav them to the data file as required]\n\n3) Run PCR on pcrData.txt contents.\n");
+    print("Welcome to the PCR simulator. You can use the options below to generate random DNA strands and primers for a simulattion, or enter your own into the pcrData.txt data file. ");
+    
+    print("\nThe file format is:\nDNA strand 1, 3' -> 5'\nDNA strand 2, 5' -> 3'\nStrand 1 binding primer, 5' -> 3'\nStrand 2 binding primer, 3' -> 5'");
+    
+    print("\nMENU:\n\n1) Generate random DNA strands to file. \n[WARNING: This will overide existing data in pcrData.txt]\n\n2) Generate primers based on copy region.[This will save them to the data file as required]\n\n3) Run PCR on pcrData.txt contents.\n");
     
     while menuChoice < 1 or menuChoice > 3:
         
@@ -363,7 +405,7 @@ def main():
     if menuChoice == 1:
         
         generateDNA()
-      
+    
     elif menuChoice == 2:
         
         GeneratePrimers();
